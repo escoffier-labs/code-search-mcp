@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { registerCodeSearchTools } from "../src/tools/code-search.js";
+import { formatSearchResponse, registerCodeSearchTools } from "../src/tools/code-search.js";
 import type { CodeSearchClient } from "../src/client.js";
+import { normalizeUrl } from "../src/config.js";
+import type { SearchResponse } from "../src/types.js";
 
 interface CapturedTool {
   name: string;
@@ -120,4 +122,94 @@ describe("code-search tool handlers", () => {
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toContain("connection refused");
   });
+
+  it("formats grouped search results by file", () => {
+    const response: SearchResponse = {
+      total_matches: 3,
+      mode: "hybrid",
+      results: [
+        makeResult({ file_path: "src/a.ts", chunk_index: 1, score: 0.9 }),
+        makeResult({ file_path: "src/b.ts", chunk_index: 0, score: 0.8 }),
+        makeResult({ file_path: "src/a.ts", chunk_index: 2, score: 0.7 }),
+      ],
+    };
+
+    expect(
+      formatSearchResponse(response, {
+        format: "by_file",
+        includeContent: false,
+        maxContentChars: 20,
+      }),
+    ).toEqual({
+      total_matches: 3,
+      mode: "hybrid",
+      files: [
+        {
+          file_path: "src/a.ts",
+          project: "proj",
+          best_score: 0.9,
+          matches: [
+            {
+              file_path: "src/a.ts",
+              project: "proj",
+              chunk_index: 1,
+              chunk_type: "function",
+              score: 0.9,
+              code_score: 0.6,
+              summary_score: 0.95,
+              summary: "summary",
+            },
+            {
+              file_path: "src/a.ts",
+              project: "proj",
+              chunk_index: 2,
+              chunk_type: "function",
+              score: 0.7,
+              code_score: 0.6,
+              summary_score: 0.95,
+              summary: "summary",
+            },
+          ],
+        },
+        {
+          file_path: "src/b.ts",
+          project: "proj",
+          best_score: 0.8,
+          matches: [
+            {
+              file_path: "src/b.ts",
+              project: "proj",
+              chunk_index: 0,
+              chunk_type: "function",
+              score: 0.8,
+              code_score: 0.6,
+              summary_score: 0.95,
+              summary: "summary",
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("validates API URLs before the MCP server starts", () => {
+    expect(normalizeUrl("http://localhost:5204/")).toBe("http://localhost:5204");
+    expect(() => normalizeUrl("file:///tmp/code-search.sock")).toThrow("http or https");
+    expect(() => normalizeUrl("not a url")).toThrow("Invalid CODE_SEARCH_API_URL");
+  });
 });
+
+function makeResult(overrides: Partial<SearchResponse["results"][number]> = {}) {
+  return {
+    score: 0.9,
+    code_score: 0.6,
+    summary_score: 0.95,
+    file_path: "src/a.ts",
+    project: "proj",
+    chunk_index: 0,
+    chunk_type: "function",
+    summary: "summary",
+    content: "const value = 'long content';",
+    ...overrides,
+  };
+}

@@ -2,6 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@solomonneas/code-search-mcp.svg)](https://www.npmjs.com/package/@solomonneas/code-search-mcp)
 [![license](https://img.shields.io/npm/l/@solomonneas/code-search-mcp.svg)](./LICENSE)
+[![CI](https://github.com/solomonneas/code-search-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/solomonneas/code-search-mcp/actions/workflows/ci.yml)
 [![MCP](https://img.shields.io/badge/MCP-compatible-blue)](https://modelcontextprotocol.io)
 
 Read-only MCP server for [code-search-api](https://github.com/solomonneas/code-search-api). It lets Claude Desktop, Claude Code, OpenClaw, Hermes Agent, Codex CLI, and any MCP-compatible client query a local codebase by intent through a running code-search-api service.
@@ -10,10 +11,25 @@ Read-only MCP server for [code-search-api](https://github.com/solomonneas/code-s
 
 ## Tools
 
-- `search_code` - semantic search over the indexed workspace. Supports `mode` (`hybrid`, `code`, `summary`), `project`, `limit`, and `min_score`.
+- `search_code` - semantic search over the indexed workspace. Supports `mode` (`hybrid`, `code`, `summary`), `project`, `limit`, `min_score`, `response_format`, `include_content`, and `max_content_chars`.
 - `list_projects` - project names and chunk, embedding, and summary counts from `/api/projects`.
 - `code_search_stats` - chunk type, per-project coverage, and summary model coverage from `/api/stats` and `/api/summary-stats`.
 - `health` - readiness and index counters from `/health`.
+
+`search_code` response formats:
+
+| Format | Description |
+|--------|-------------|
+| `raw` | The unmodified code-search-api `/api/search` response. This is the default. |
+| `compact` | Keeps scores, file path, project, chunk metadata, summary, and optional trimmed content preview. |
+| `by_file` | Groups compact matches by `file_path` and surfaces each file's best score. |
+
+Example prompts:
+
+- "Find the FastAPI route that handles semantic code search."
+- "Where is API key authentication enforced?"
+- "List likely files involved in summary backfills, grouped by file."
+- "Search only the `code-search-api` project for embedding cache logic."
 
 ## Install
 
@@ -81,7 +97,7 @@ If you're running from a source checkout instead of the npm-installed binary, po
 ```bash
 openclaw mcp set code-search '{
   "command": "node",
-    "args": ["/absolute/path/to/code-search-mcp/dist/index.js"],
+  "args": ["/absolute/path/to/code-search-mcp/dist/index.js"],
   "env": {
     "CODE_SEARCH_API_URL": "http://localhost:5204",
     "CODE_SEARCH_API_KEY": "your-api-key-here"
@@ -172,7 +188,19 @@ npm install
 npm run typecheck
 npm test
 npm run build
+npm run smoke       # requires a live code-search-api service
+npm run pack:dry-run
 ```
+
+## Release
+
+The release script verifies the package, optionally smoke-tests against a live service, publishes to npm, packs the exact npm artifact into `/tmp`, extracts it, and publishes that extracted package to ClawHub with source provenance pointing at this repo.
+
+```bash
+scripts/release.sh --publish
+```
+
+Set `SKIP_SMOKE=1` if no local code-search-api service is available during release.
 
 ## License
 
