@@ -7,7 +7,7 @@ Usage: scripts/release.sh --publish
 
 Runs verification, publishes the current package version to npm, packs the exact
 npm artifact into /tmp, extracts it, and publishes that extracted package to
-ClawHub with source provenance pointing at solomonneas/code-search-mcp.
+ClawHub with source provenance pointing at escoffier-labs/code-search-mcp.
 
 Set SKIP_SMOKE=1 to skip the live code-search-api smoke test.
 USAGE
@@ -41,6 +41,6 @@ tar -xzf "$TARBALL" -C "$PACK_DIR" --strip-components=1
   cd "$PACK_DIR"
   npx clawhub --workdir . package publish . \
     --family code-plugin \
-    --source-repo solomonneas/code-search-mcp \
+    --source-repo escoffier-labs/code-search-mcp \
     --source-commit "$SHA"
 )
