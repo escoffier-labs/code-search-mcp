@@ -2,3 +2,7 @@ node_modules/
 dist/
 *.tgz
 .claude/
+
+# Local brigade memory (cards are local-only, never committed)
+/memory/
+.brigade/
