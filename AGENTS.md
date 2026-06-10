@@ -1,12 +1,12 @@
 # Repository Guidance
 
 ## Definition of Done
-Before reporting any change complete, run all of these and confirm they pass:
+Before reporting any change complete, run the single verification entrypoint and
+confirm it exits 0:
 ```bash
-npm run typecheck
-npm test
-npm run build
+./scripts/verify
 ```
+It runs `npm run typecheck`, `npm test`, and `npm run build` in order.
 Report actual results, not expectations. If any command fails, report the failure
 output verbatim and do not claim success. Do not skip a check because the change
 "looks safe". These scripts are defined in `package.json`; if a script is missing
