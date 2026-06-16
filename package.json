@@ -1,6 +1,6 @@
 {
   "name": "@solomonneas/code-search-mcp",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Read-only MCP server and OpenClaw plugin for querying a local code-search-api index by intent.",
   "type": "module",
   "main": "dist/index.cjs",

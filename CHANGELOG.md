@@ -6,6 +6,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-16
+
 ### Fixed
 - Strip the draft-07 `$schema` key the MCP SDK stamps on tool schemas before
   sending `tools/list` output. Some MCP clients reject draft-07 schemas, so the
