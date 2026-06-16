@@ -1,8 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { formatSearchResponse, registerCodeSearchTools } from "../src/tools/code-search.js";
+import { VERSION, applySchemaStripIntercept, createServer } from "../src/index.js";
 import type { CodeSearchClient } from "../src/client.js";
 import { normalizeUrl } from "../src/config.js";
 import type { SearchResponse } from "../src/types.js";
+import pkg from "../package.json" with { type: "json" };
 
 interface CapturedTool {
   name: string;
@@ -196,6 +200,93 @@ describe("code-search tool handlers", () => {
     expect(normalizeUrl("http://localhost:5204/")).toBe("http://localhost:5204");
     expect(() => normalizeUrl("file:///tmp/code-search.sock")).toThrow("http or https");
     expect(() => normalizeUrl("not a url")).toThrow("Invalid CODE_SEARCH_API_URL");
+  });
+
+  it("hints at the applied min_score when compact output is empty", () => {
+    const response: SearchResponse = { total_matches: 0, mode: "hybrid", results: [] };
+
+    expect(
+      formatSearchResponse(response, {
+        format: "compact",
+        includeContent: false,
+        maxContentChars: 20,
+        minScore: 0.3,
+      }),
+    ).toEqual({
+      total_matches: 0,
+      mode: "hybrid",
+      applied_min_score: 0.3,
+      note: "No results at or above min_score 0.3. Lower min_score to widen the search.",
+      results: [],
+    });
+  });
+
+  it("hints at the applied min_score when by_file output is empty", () => {
+    const response: SearchResponse = { total_matches: 0, mode: "hybrid", results: [] };
+
+    expect(
+      formatSearchResponse(response, {
+        format: "by_file",
+        includeContent: false,
+        maxContentChars: 20,
+        minScore: 0.5,
+      }),
+    ).toEqual({
+      total_matches: 0,
+      mode: "hybrid",
+      applied_min_score: 0.5,
+      note: "No results at or above min_score 0.5. Lower min_score to widen the search.",
+      files: [],
+    });
+  });
+
+  it("omits the empty hint when results are present", () => {
+    const response: SearchResponse = {
+      total_matches: 1,
+      mode: "hybrid",
+      results: [makeResult({})],
+    };
+
+    const out = formatSearchResponse(response, {
+      format: "compact",
+      includeContent: false,
+      maxContentChars: 20,
+      minScore: 0.3,
+    }) as Record<string, unknown>;
+
+    expect(out.applied_min_score).toBeUndefined();
+    expect(out.note).toBeUndefined();
+  });
+});
+
+describe("server version and schema transport", () => {
+  it("derives VERSION from package.json", () => {
+    expect(VERSION).toBe(pkg.version);
+  });
+
+  it("strips the draft-07 $schema from every tool's inputSchema on the wire", async () => {
+    const server = createServer();
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    applySchemaStripIntercept(serverTransport);
+
+    const client = new Client({ name: "schema-strip-test", version: "0.0.0" });
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+
+    try {
+      const { tools } = await client.listTools();
+      expect(tools.length).toBeGreaterThan(0);
+      for (const tool of tools) {
+        expect(tool.inputSchema).toBeDefined();
+        expect("$schema" in (tool.inputSchema as Record<string, unknown>)).toBe(false);
+        if (tool.outputSchema) {
+          expect("$schema" in (tool.outputSchema as Record<string, unknown>)).toBe(false);
+        }
+      }
+    } finally {
+      await client.close();
+      await server.close();
+    }
   });
 });
 

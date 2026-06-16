@@ -69,6 +69,7 @@ export function registerCodeSearchTools(server: McpServer, client: CodeSearchCli
             format: response_format as SearchResponseFormat,
             includeContent: include_content,
             maxContentChars: max_content_chars,
+            minScore: min_score,
           }),
         );
       } catch (error) {
@@ -124,6 +125,7 @@ export function formatSearchResponse(
     format: SearchResponseFormat;
     includeContent: boolean;
     maxContentChars: number;
+    minScore?: number;
   },
 ): unknown {
   if (options.format === "raw") return response;
@@ -133,6 +135,7 @@ export function formatSearchResponse(
     return {
       total_matches: response.total_matches,
       mode: response.mode,
+      ...emptyHint(compactResults.length, options.minScore),
       results: compactResults,
     };
   }
@@ -157,10 +160,23 @@ export function formatSearchResponse(
     }
   }
 
+  const grouped = [...files.values()].sort((a, b) => b.best_score - a.best_score);
   return {
     total_matches: response.total_matches,
     mode: response.mode,
-    files: [...files.values()].sort((a, b) => b.best_score - a.best_score),
+    ...emptyHint(grouped.length, options.minScore),
+    files: grouped,
+  };
+}
+
+// When the compact/by_file projection is empty, surface the applied min_score
+// and total_matches so callers know the floor filtered everything out and can
+// retry with a lower min_score.
+function emptyHint(count: number, minScore?: number): Record<string, unknown> {
+  if (count > 0 || minScore === undefined) return {};
+  return {
+    applied_min_score: minScore,
+    note: `No results at or above min_score ${minScore}. Lower min_score to widen the search.`,
   };
 }
 

@@ -202,6 +202,12 @@ scripts/release.sh --publish
 
 Set `SKIP_SMOKE=1` if no local code-search-api service is available during release.
 
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for notable changes, including the draft-07
+`$schema` strip fix, the move to the `escoffier-labs` organization, and the
+`scripts/verify` entrypoint.
+
 ## License
 
 MIT

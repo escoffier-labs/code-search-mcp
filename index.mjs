@@ -1,4 +1,5 @@
 const DEFAULT_URL = "http://localhost:5204";
+const REQUEST_TIMEOUT_MS = 30_000;
 
 function resolveConfig(pluginConfig = {}) {
   const url = normalizeUrl(String(pluginConfig.url || process.env.CODE_SEARCH_API_URL || DEFAULT_URL));
@@ -32,25 +33,36 @@ async function request(config, path, options = {}) {
   if (config.apiKey) headers["X-API-Key"] = config.apiKey;
   if (options.body) headers["Content-Type"] = "application/json";
 
-  let response;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   try {
-    response = await fetch(`${config.url}${path}`, {
-      ...options,
-      headers: { ...headers, ...(options.headers || {}) },
-    });
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    throw new Error(`Unable to reach code-search-api at ${config.url}. Is it running? ${msg}`);
-  }
-  const text = await response.text();
-  if (!response.ok) {
-    const detail = text ? `: ${text.slice(0, 500)}` : "";
-    if (response.status === 401 || response.status === 403) {
-      throw new Error(`code-search-api rejected the request. Set CODE_SEARCH_API_KEY for ${config.url}${detail}`);
+    let response;
+    try {
+      response = await fetch(`${config.url}${path}`, {
+        ...options,
+        headers: { ...headers, ...(options.headers || {}) },
+        signal: controller.signal,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new Error(`Request to ${path} timed out after ${REQUEST_TIMEOUT_MS}ms`);
+      }
+      const msg = error instanceof Error ? error.message : String(error);
+      throw new Error(`Unable to reach code-search-api at ${config.url}. Is it running? ${msg}`);
     }
-    throw new Error(`code-search-api HTTP ${response.status} for ${path}${detail}`);
+    const text = await response.text();
+    if (!response.ok) {
+      const detail = text ? `: ${text.slice(0, 500)}` : "";
+      if (response.status === 401 || response.status === 403) {
+        throw new Error(`code-search-api rejected the request. Set CODE_SEARCH_API_KEY for ${config.url}${detail}`);
+      }
+      throw new Error(`code-search-api HTTP ${response.status} for ${path}${detail}`);
+    }
+    return text ? JSON.parse(text) : undefined;
+  } finally {
+    clearTimeout(timeout);
   }
-  return text ? JSON.parse(text) : undefined;
 }
 
 function makeTool(config, tool) {
@@ -146,6 +158,7 @@ const tools = [
         format: params.response_format || "raw",
         includeContent: params.include_content ?? true,
         maxContentChars: params.max_content_chars ?? 240,
+        minScore: params.min_score ?? 0.3,
       });
     },
   },
@@ -208,6 +221,7 @@ function formatSearchResponse(response, options) {
     return {
       total_matches: response.total_matches,
       mode: response.mode,
+      ...emptyHint(compactResults.length, options.minScore),
       results: compactResults,
     };
   }
@@ -228,10 +242,23 @@ function formatSearchResponse(response, options) {
     }
   }
 
+  const grouped = [...files.values()].sort((a, b) => b.best_score - a.best_score);
   return {
     total_matches: response.total_matches,
     mode: response.mode,
-    files: [...files.values()].sort((a, b) => b.best_score - a.best_score),
+    ...emptyHint(grouped.length, options.minScore),
+    files: grouped,
+  };
+}
+
+// When the compact/by_file projection is empty, surface the applied min_score
+// and total_matches so callers know the floor filtered everything out and can
+// retry with a lower min_score.
+function emptyHint(count, minScore) {
+  if (count > 0 || minScore === undefined) return {};
+  return {
+    applied_min_score: minScore,
+    note: `No results at or above min_score ${minScore}. Lower min_score to widen the search.`,
   };
 }
 
