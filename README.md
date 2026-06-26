@@ -1,9 +1,19 @@
-# code-search-mcp
+<p align="center">
+  <img src="docs/assets/code-search-mcp-social-preview.jpg" alt="code-search-mcp banner" width="900">
+</p>
 
-[![npm version](https://img.shields.io/npm/v/@solomonneas/code-search-mcp.svg)](https://www.npmjs.com/package/@solomonneas/code-search-mcp)
-[![license](https://img.shields.io/npm/l/@solomonneas/code-search-mcp.svg)](./LICENSE)
-[![CI](https://github.com/escoffier-labs/code-search-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/escoffier-labs/code-search-mcp/actions/workflows/ci.yml)
-[![MCP](https://img.shields.io/badge/MCP-compatible-blue)](https://modelcontextprotocol.io)
+<h1 align="center">code-search-mcp</h1>
+
+<p align="center">
+  <strong>Read-only MCP server that lets any MCP client query a local codebase by intent through code-search-api.</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/actions/workflow/status/escoffier-labs/code-search-mcp/ci.yml?branch=main&style=for-the-badge&label=ci" alt="CI status">
+  <img src="https://img.shields.io/npm/v/@solomonneas/code-search-mcp?style=for-the-badge&label=npm&logo=npm&logoColor=white" alt="npm version">
+  <img src="https://img.shields.io/badge/MCP-compatible-blue?style=for-the-badge" alt="MCP compatible">
+  <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="MIT license">
+</p>
 
 Read-only MCP server for [code-search-api](https://github.com/escoffier-labs/code-search-api). It lets Claude Desktop, Claude Code, OpenClaw, Hermes Agent, Codex CLI, and any MCP-compatible client query a local codebase by intent through a running code-search-api service.
 
