@@ -191,6 +191,26 @@ Codex writes the entry to `~/.codex/config.toml` under `[mcp_servers.code-search
 codex mcp list
 ```
 
+## CLI
+
+The same package ships an operator CLI for shells, cron, and CI. It is read-only and talks to the same local `code-search-api`.
+
+```bash
+npx @solomonneas/code-search-mcp@latest search "where is auth configured" --limit 5
+# or, installed globally, simply:
+code-search search "where is auth configured"
+code-search projects
+code-search stats
+code-search health        # exit 1 if the API is not ok (cron-friendly)
+code-search --json stats  # raw JSON for piping
+```
+
+Run `code-search help` for the full flag list. Configure with `CODE_SEARCH_API_URL` (default `http://localhost:5204`) and optional `CODE_SEARCH_API_KEY`.
+
+### Starting the MCP server
+
+`code-search mcp` (or the back-compat `code-search-mcp` bin) starts the stdio MCP server. If a launcher referenced the file path `dist/index.js` directly, point it at `dist/mcp-bin.js` (or `dist/cli.js mcp`); launchers that use the `code-search-mcp` bin name need no change.
+
 ## Development
 
 ```bash
