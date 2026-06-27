@@ -19,6 +19,21 @@ Read-only MCP server for [code-search-api](https://github.com/escoffier-labs/cod
 
 `code-search-mcp` talks to the FastAPI service over HTTP and uses stdio for MCP transport. It does not index, delete, backfill, or mutate the code-search-api database.
 
+## Install
+
+```bash
+npm install -g @solomonneas/code-search-mcp
+```
+
+Or from source:
+
+```bash
+git clone https://github.com/escoffier-labs/code-search-mcp.git
+cd code-search-mcp
+npm install
+npm run build
+```
+
 ## Tools
 
 - `search_code` - semantic search over the indexed workspace. Supports `mode` (`hybrid`, `code`, `summary`), `project`, `limit`, `min_score`, `response_format`, `include_content`, and `max_content_chars`.
@@ -40,21 +55,6 @@ Example prompts:
 - "Where is API key authentication enforced?"
 - "List likely files involved in summary backfills, grouped by file."
 - "Search only the `code-search-api` project for embedding cache logic."
-
-## Install
-
-```bash
-npm install -g @solomonneas/code-search-mcp
-```
-
-Or from source:
-
-```bash
-git clone https://github.com/escoffier-labs/code-search-mcp.git
-cd code-search-mcp
-npm install
-npm run build
-```
 
 ## Configuration
 
