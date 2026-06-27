@@ -1,5 +1,3 @@
-import { realpathSync } from "node:fs";
-import { pathToFileURL } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CodeSearchClient } from "./client.js";
@@ -44,30 +42,9 @@ export function applySchemaStripIntercept(transport: { send: (message: any, ...r
   };
 }
 
-async function main(): Promise<void> {
+export async function serve(): Promise<void> {
   const server = createServer();
   const transport = new StdioServerTransport();
   applySchemaStripIntercept(transport);
   await server.connect(transport);
-}
-
-// True when this module is the process entrypoint. process.argv[1] is often a
-// symlink (npm installs the bin as a link), so resolve it to its real path
-// before comparing - otherwise a symlinked launch never starts the server.
-const isEntrypoint = (() => {
-  const arg = process.argv[1];
-  if (typeof arg !== "string") return false;
-  try {
-    return import.meta.url === pathToFileURL(realpathSync(arg)).href;
-  } catch {
-    return false;
-  }
-})();
-
-if (isEntrypoint) {
-  main().catch((error: unknown) => {
-    const msg = error instanceof Error ? error.message : String(error);
-    console.error(`code-search-mcp fatal: ${msg}`);
-    process.exit(1);
-  });
 }
