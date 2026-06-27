@@ -49,7 +49,7 @@ Key tech: TypeScript ESM, tsup (build), vitest (test). Node >= 20.
 - Modify: `src/index.ts`
 - Test: `tests/code-search.test.ts` (existing; must stay green)
 
-- [ ] Replace the `main()` / `isEntrypoint` / auto-run block at the bottom of `src/index.ts` with an exported `serve()`. The final state of `src/index.ts` from line 47 onward is exactly:
+- [x] Replace the `main()` / `isEntrypoint` / auto-run block at the bottom of `src/index.ts` with an exported `serve()`. The final state of `src/index.ts` from line 47 onward is exactly:
 
 ```ts
 export async function serve(): Promise<void> {
@@ -62,8 +62,8 @@ export async function serve(): Promise<void> {
 
 Delete the old `async function main()`, the `isEntrypoint` IIFE, and the `if (isEntrypoint) { main()... }` block. Keep all existing exports above it (`VERSION`, `createServer`, `stripDraftSchema`, `applySchemaStripIntercept`). The `realpathSync` / `pathToFileURL` imports are no longer used by `index.ts`; remove them from the import block (lines 1-2).
 
-- [ ] Run the existing suite, expect still green (no test depended on the auto-run): `npm test` - expect PASS (same test count as before).
-- [ ] Commit: `git add -A && git commit -m "refactor: extract serve() so index.ts is a pure library"`
+- [x] Run the existing suite, expect still green (no test depended on the auto-run): `npm test` - expect PASS (same test count as before).
+- [x] Commit: `git add -A && git commit -m "refactor: extract serve() so index.ts is a pure library"`
 
 ---
 
@@ -72,7 +72,7 @@ Delete the old `async function main()`, the `isEntrypoint` IIFE, and the `if (is
 **Files:**
 - Create: `src/mcp-bin.ts`
 
-- [ ] Create `src/mcp-bin.ts` with the full contents:
+- [x] Create `src/mcp-bin.ts` with the full contents:
 
 ```ts
 import { serve } from "./index.js";
@@ -84,8 +84,8 @@ serve().catch((error: unknown) => {
 });
 ```
 
-- [ ] Typecheck: `npm run typecheck` - expect PASS.
-- [ ] Commit: `git add -A && git commit -m "feat: add code-search-mcp server bin"`
+- [x] Typecheck: `npm run typecheck` - expect PASS.
+- [x] Commit: `git add -A && git commit -m "feat: add code-search-mcp server bin"`
 
 ---
 
@@ -95,7 +95,7 @@ serve().catch((error: unknown) => {
 - Create: `tests/cli.test.ts`
 - Create: `src/cli.ts`
 
-- [ ] Write the failing test first. Create `tests/cli.test.ts`:
+- [x] Write the failing test first. Create `tests/cli.test.ts`:
 
 ```ts
 import { describe, expect, it, vi } from "vitest";
@@ -220,8 +220,8 @@ describe("run", () => {
 });
 ```
 
-- [ ] Run it, watch it fail: `npx vitest run tests/cli.test.ts` - expect FAIL, "Cannot find module '../src/cli.js'" (file not created yet).
-- [ ] Implement `src/cli.ts` with the full contents:
+- [x] Run it, watch it fail: `npx vitest run tests/cli.test.ts` - expect FAIL, "Cannot find module '../src/cli.js'" (file not created yet).
+- [x] Implement `src/cli.ts` with the full contents:
 
 ```ts
 import { realpathSync } from "node:fs";
@@ -585,9 +585,9 @@ if (isEntrypoint) {
 }
 ```
 
-- [ ] Run to green: `npx vitest run tests/cli.test.ts` - expect PASS (all cases).
-- [ ] Run the full suite to confirm nothing regressed: `npm test` - expect PASS.
-- [ ] Commit: `git add -A && git commit -m "feat: add code-search operator CLI sharing the client core"`
+- [x] Run to green: `npx vitest run tests/cli.test.ts` - expect PASS (all cases).
+- [x] Run the full suite to confirm nothing regressed: `npm test` - expect PASS.
+- [x] Commit: `git add -A && git commit -m "feat: add code-search operator CLI sharing the client core"`
 
 ---
 
@@ -597,7 +597,7 @@ if (isEntrypoint) {
 - Modify: `package.json`
 - Modify: `tsup.config.ts`
 
-- [ ] In `package.json`, replace the `bin` block with:
+- [x] In `package.json`, replace the `bin` block with:
 
 ```json
   "bin": {
@@ -606,13 +606,13 @@ if (isEntrypoint) {
   },
 ```
 
-- [ ] In `package.json` `scripts`, change `start` from `"node dist/index.js"` to:
+- [x] In `package.json` `scripts`, change `start` from `"node dist/index.js"` to:
 
 ```json
     "start": "node dist/cli.js mcp",
 ```
 
-- [ ] In `tsup.config.ts`, set the entry array and disable splitting so each bin is self-contained. Final file:
+- [x] In `tsup.config.ts`, set the entry array and disable splitting so each bin is self-contained. Final file:
 
 ```ts
 import { defineConfig } from "tsup";
@@ -632,12 +632,12 @@ export default defineConfig({
 });
 ```
 
-- [ ] Build: `npm run build` - expect success and `dist/cli.js`, `dist/mcp-bin.js`, `dist/index.js` present (`ls dist/cli.js dist/mcp-bin.js`).
-- [ ] Smoke the CLI without the API: `node dist/cli.js --version` - expect it prints `0.2.0`.
-- [ ] Smoke help routing: `node dist/cli.js help | head -1` - expect `code-search - semantic search over a local code-search-api index`.
-- [ ] Smoke against the live API (code-search-api runs on :5204): `node dist/cli.js health` - expect `status: ok` and exit 0 (`echo $?` -> 0). If the API is down, expect a clear "Unable to reach code-search-api" error and exit 1; that is correct behavior, not a task failure.
-- [ ] Smoke a real search: `node dist/cli.js search "config loading" --limit 3` - expect grouped file output.
-- [ ] Commit: `git add -A && git commit -m "build: expose code-search and code-search-mcp bins"`
+- [x] Build: `npm run build` - expect success and `dist/cli.js`, `dist/mcp-bin.js`, `dist/index.js` present (`ls dist/cli.js dist/mcp-bin.js`).
+- [x] Smoke the CLI without the API: `node dist/cli.js --version` - expect it prints `0.2.0`.
+- [x] Smoke help routing: `node dist/cli.js help | head -1` - expect `code-search - semantic search over a local code-search-api index`.
+- [x] Smoke against the live API (code-search-api runs on :5204): `node dist/cli.js health` - expect `status: ok` and exit 0 (`echo $?` -> 0). If the API is down, expect a clear "Unable to reach code-search-api" error and exit 1; that is correct behavior, not a task failure.
+- [x] Smoke a real search: `node dist/cli.js search "config loading" --limit 3` - expect grouped file output.
+- [x] Commit: `git add -A && git commit -m "build: expose code-search and code-search-mcp bins"`
 
 ---
 
@@ -646,7 +646,7 @@ export default defineConfig({
 **Files:**
 - Modify: `README.md`
 
-- [ ] Add a `## CLI` section to `README.md` (place it after the MCP usage section). Insert this markdown verbatim:
+- [x] Add a `## CLI` section to `README.md` (place it after the MCP usage section). Insert this markdown verbatim:
 
 ```markdown
 ## CLI
@@ -670,17 +670,17 @@ Run `code-search help` for the full flag list. Configure with `CODE_SEARCH_API_U
 `code-search mcp` (or the back-compat `code-search-mcp` bin) starts the stdio MCP server. If a launcher referenced the file path `dist/index.js` directly, point it at `dist/mcp-bin.js` (or `dist/cli.js mcp`); launchers that use the `code-search-mcp` bin name need no change.
 ```
 
-- [ ] Commit: `git add -A && git commit -m "docs: document the code-search CLI and bin migration"`
+- [x] Commit: `git add -A && git commit -m "docs: document the code-search CLI and bin migration"`
 
 ---
 
 ## Verification checklist (run after all tasks)
 
-- [ ] `npm run typecheck` - PASS
-- [ ] `npm test` - PASS (existing MCP tests + new CLI tests)
-- [ ] `npm run build` - PASS
-- [ ] `node dist/cli.js health` - reachable, exit 0 (with API up)
-- [ ] `node dist/mcp-bin.js` - starts and blocks on stdio (Ctrl-C to exit); confirms back-compat entrypoint
+- [x] `npm run typecheck` - PASS
+- [x] `npm test` - PASS (existing MCP tests + new CLI tests)
+- [x] `npm run build` - PASS
+- [x] `node dist/cli.js health` - reachable, exit 0 (with API up)
+- [x] `node dist/mcp-bin.js` - starts and blocks on stdio (Ctrl-C to exit); confirms back-compat entrypoint
 
 ## Out of scope (separate, gated follow-ups)
 
