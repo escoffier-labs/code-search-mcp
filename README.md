@@ -193,7 +193,7 @@ codex mcp list
 
 ## CLI
 
-The same package ships an operator CLI for shells, cron, and CI. It is read-only and talks to the same local `code-search-api`.
+The same package ships a read-only **search tool**, `code-search`, for shells, cron, and CI. It talks to the same local `code-search-api`.
 
 ```bash
 npx @solomonneas/code-search-mcp@latest search "where is auth configured" --limit 5
