@@ -9,10 +9,10 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/actions/workflow/status/escoffier-labs/code-search-mcp/ci.yml?branch=main&style=for-the-badge&label=ci" alt="CI status">
-  <img src="https://img.shields.io/npm/v/@solomonneas/code-search-mcp?style=for-the-badge&label=npm&logo=npm&logoColor=white" alt="npm version">
-  <img src="https://img.shields.io/badge/MCP-compatible-blue?style=for-the-badge" alt="MCP compatible">
-  <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="MIT license">
+  <img src="https://shieldcn.dev/github/ci/escoffier-labs/code-search-mcp.svg?branch=main&workflow=ci.yml" alt="CI status">
+  <img src="https://shieldcn.dev/npm/@solomonneas/code-search-mcp.svg" alt="npm version">
+  <img src="https://shieldcn.dev/badge/MCP-compatible-blue.svg" alt="MCP compatible">
+  <img src="https://shieldcn.dev/badge/license-MIT-green.svg" alt="MIT license">
 </p>
 
 Read-only MCP server for [code-search-api](https://github.com/escoffier-labs/code-search-api). It lets Claude Desktop, Claude Code, OpenClaw, Hermes Agent, Codex CLI, and any MCP-compatible client query a local codebase by intent through a running code-search-api service.
